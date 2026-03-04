@@ -43,6 +43,10 @@ const TProductSchema = z.object({
     required_error: 'Variants are required',
   }),
   inventory: TInventorySchema,
+  image: z
+    .string({
+      required_error: 'Must enter product information',
+    })
 });
 
 export { TProductSchema, TVariantSchema, TInventorySchema };

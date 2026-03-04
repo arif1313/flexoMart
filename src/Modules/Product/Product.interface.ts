@@ -16,4 +16,5 @@ export type TProduct = {
   tags: string[];
   variants: TVariant[];
   inventory: TInventory;
+  image:string;
 };

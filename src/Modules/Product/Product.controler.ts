@@ -6,7 +6,11 @@ import sendResponse from '../../app/utils/sendResponse';
 
 
 const CreateProduct = catchAsync(async (req: Request, res: Response) => {
-  const product = req.body;
+
+   const product = {
+      ...req.body,
+      image: req.body.image, // single string
+    };
   const zodParseData = TProductSchema.parse(product);
   const result = await productService.createproductDbLInk(zodParseData);
   

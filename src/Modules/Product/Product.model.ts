@@ -1,7 +1,6 @@
 import { Schema, model } from 'mongoose';
 import { TInventory, TProduct, TVariant } from './Product.interface';
 
-
 const TVariantSchema = new Schema<TVariant>({
   type: {
     type: String,
@@ -12,6 +11,7 @@ const TVariantSchema = new Schema<TVariant>({
     required: true,
   },
 });
+
 const TInventorySchema = new Schema<TInventory>({
   quantity: {
     type: Number,
@@ -26,23 +26,22 @@ const TInventorySchema = new Schema<TInventory>({
 const TProductSchema = new Schema<TProduct>({
   name: {
     type: String,
-    required: [true, ' Name is required'],
-
+    required: [true, 'Name is required'],
     trim: true,
-    maxlength: [20, 'Name can not be more than 20 characters'],
+    maxlength: [20, 'Name cannot be more than 20 characters'],
   },
   description: {
     type: String,
-    required: [true, 'must enter podcuct information'],
-    minlength: [30, 'description should more than 20 char'],
+    required: [true, 'Must enter product information'],
+    minlength: [30, 'Description should be more than 30 characters'],
   },
   price: {
     type: Number,
-    required: [true, 'price is required'],
+    required: [true, 'Price is required'],
   },
   category: {
     type: String,
-    required: [true, ' Catagory is required'],
+    required: [true, 'Category is required'],
   },
   tags: {
     type: [String],
@@ -52,7 +51,14 @@ const TProductSchema = new Schema<TProduct>({
     type: [TVariantSchema],
     required: true,
   },
-  inventory: TInventorySchema,
-});
+  inventory: {
+    type: TInventorySchema,
+    required: true,
+  },
+  image: {
+    type: String,
+    required: [true, 'Image is required'], // Optional: add if image is required
+  }
+}); // <-- This closing bracket was missing!
 
 export const ProductModel = model<TProduct>('FlexoProducts', TProductSchema);
