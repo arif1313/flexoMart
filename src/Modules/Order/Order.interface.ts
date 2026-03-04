@@ -1,22 +1,33 @@
-export type TOrderStatus = 'pending' | 'shipping' | 'delivered' | 'cancelled';
+import { Types } from "mongoose";
 
-export type TShippingAddress = {
+export interface IOrderItem {
+  productId: Types.ObjectId;
   name: string;
-  phone: string;
-  address: string;
-  city: string;
-  country: string;
-};
-
-export type TOrderProduct = {
-  email: string;
-  productId: string;
   price: number;
   quantity: number;
-  status: TOrderStatus;
-  paymentMethod: 'cash' | 'card';
-  shippingAddress: TShippingAddress;
-  userId?: string;
+  image?: string;
+}
+
+export interface IShippingAddress {
+  fullName: string;
+  phone: string;
+  city: string;
+  address: string;
+}
+
+export interface IOrder {
+  sessionId: string;
+  orderNumber: string;
+  items: IOrderItem[];
+  totalAmount: number;
+  shippingAddress: IShippingAddress;
+  paymentMethod: string;
+  paymentStatus: "pending" | "paid" | "failed";
+  orderStatus: "pending" | "processing" | "shipped" | "delivered" | "cancelled";
+  orderDate: Date;
+  deliveredAt?: Date;
+  cancelledAt?: Date;
+  notes?: string;
   createdAt?: Date;
   updatedAt?: Date;
-};
+}

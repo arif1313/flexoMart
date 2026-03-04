@@ -1,78 +1,116 @@
-import { TOrderProduct, TOrderStatus } from './Order.interface';
-import { OrderProductModel } from './Order.model';
+import { Order } from "./Order.model";
+import { IOrder } from "./Order.interface";
 
-type Promiss = {
-  success: boolean;
-  message: string;
-  data?: string | object;
+/* =================================
+   Create Order
+================================= */
+const createOrder = async (payload: IOrder) => {
+  const order = await Order.create(payload);
+
+  return {
+    success: true,
+    message: "Order created successfully",
+    data: order,
+  };
 };
 
-const createOrderDblink = async (orderData: TOrderProduct) => {
-  try {
-    // Create the order
-    const result = await OrderProductModel.create(orderData);
-    
-    return {
-      success: true,
-      message: 'Order created successfully',
-      data: result,
-    };
-  } catch (error) {
-    return {
-      success: false,
-      message: 'Something went wrong',
-    };
-  }
+/* =================================
+   Get All Orders
+================================= */
+const getOrders = async () => {
+  const orders = await Order.find().sort({ createdAt: -1 });
+
+  return {
+    success: true,
+    data: orders,
+  };
 };
 
-const getOrdersDblink = async (email?: string) => {
-  let query = {};
-  if (email) {
-    query = { email };
-  }
-  const result = await OrderProductModel.find(query).sort({ createdAt: -1 });
-  return result;
+/* =================================
+   Get User Orders (by sessionId)
+================================= */
+const getUserOrders = async (sessionId: string) => {
+  const orders = await Order.find({ sessionId }).sort({
+    createdAt: -1,
+  });
+
+  return {
+    success: true,
+    data: orders,
+  };
 };
 
+/* =================================
+   Get Order By ID
+================================= */
 const getOrderById = async (orderId: string) => {
-  const result = await OrderProductModel.findById(orderId);
-  if (!result) {
-    throw new Error('Order not found');
+  const order = await Order.findById(orderId);
+
+  if (!order) {
+    throw new Error("Order not found");
   }
-  return result;
+
+  return {
+    success: true,
+    data: order,
+  };
 };
 
-const updateOrderStatus = async (orderId: string, status: TOrderStatus) => {
-  const order = await OrderProductModel.findByIdAndUpdate(
+/* =================================
+   Update Order Status
+================================= */
+const updateOrderStatus = async (
+  orderId: string,
+  status: string
+) => {
+  const updateData: any = { orderStatus: status };
+
+  if (status === "delivered") {
+    updateData.deliveredAt = new Date();
+  }
+
+  if (status === "cancelled") {
+    updateData.cancelledAt = new Date();
+  }
+
+  const updatedOrder = await Order.findByIdAndUpdate(
     orderId,
-    { status },
+    updateData,
     { new: true }
   );
-  
-  if (!order) {
-    throw new Error('Order not found');
+
+  if (!updatedOrder) {
+    throw new Error("Order not found");
   }
-  return order;
+
+  return {
+    success: true,
+    message: "Order status updated",
+    data: updatedOrder,
+  };
 };
 
-const getUserOrders = async (email: string) => {
-  const orders = await OrderProductModel.find({ email }).sort({ createdAt: -1 });
-  return orders;
-};
-
+/* =================================
+   Delete Order
+================================= */
 const deleteOrder = async (orderId: string) => {
-  const order = await OrderProductModel.findByIdAndDelete(orderId);
-  if (!order) {
-    throw new Error('Order not found');
+  const deleted = await Order.findByIdAndDelete(orderId);
+
+  if (!deleted) {
+    throw new Error("Order not found");
   }
-  return order;
+
+  return {
+    success: true,
+    message: "Order deleted successfully",
+  };
 };
 
 export const orderService = {
-  createOrderDblink,
-  getOrdersDblink,
+  createOrder,
+  getOrders,
+  getUserOrders,
   getOrderById,
   updateOrderStatus,
-  getUserOrders,
   deleteOrder,
 };

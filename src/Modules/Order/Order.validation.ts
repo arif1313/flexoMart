@@ -1,27 +1,48 @@
-import { z } from 'zod';
+import { z } from "zod";
 
-// Shipping address schema
-const shippingAddressSchema = z.object({
-  name: z.string().min(1, 'Name is required'),
-  phone: z.string().min(1, 'Phone is required'),
-  address: z.string().min(1, 'Address is required'),
-  city: z.string().min(1, 'City is required'),
-  country: z.string().min(1, 'Country is required'),
+/* ================================
+   Order Item Validation
+================================ */
+export const orderItemSchema = z.object({
+  productId: z.string().min(1, "Product ID is required"),
+  name: z.string().min(1, "Product name is required"),
+  price: z.number().min(0, "Price must be positive"),
+  quantity: z.number().min(1, "Quantity must be at least 1"),
+  image: z.string().optional(),
 });
 
-// Main order schema
-export const orderProductSchema = z.object({
-  email: z.string().email('Please provide a valid email address'),
-  productId: z.string().min(1, 'Product ID is required'),
-  price: z.number().nonnegative('Price must be positive'),
-  quantity: z.number().int().positive('Quantity must be at least 1'),
-  status: z.enum(['pending', 'shipping', 'delivered', 'cancelled']).default('pending'),
-  paymentMethod: z.enum(['cash', 'card']),
+/* ================================
+   Shipping Address Validation
+================================ */
+export const shippingAddressSchema = z.object({
+  fullName: z.string().min(1, "Full name is required"),
+  phone: z.string().min(5, "Phone is required"),
+  city: z.string().min(1, "City is required"),
+  address: z.string().min(1, "Address is required"),
+});
+
+/* ================================
+   Create Order Validation
+================================ */
+export const createOrderSchema = z.object({
+  sessionId: z.string().min(1, "Session ID is required"),
+  orderNumber: z.string().min(1, "Order number is required"),
+  items: z.array(orderItemSchema).min(1, "At least one item required"),
+  totalAmount: z.number().min(0),
   shippingAddress: shippingAddressSchema,
-  userId: z.string().optional(),
+  paymentMethod: z.string().min(1, "Payment method is required"),
+  notes: z.string().optional(),
 });
 
-// Schema for updating only the status
+/* ================================
+   Update Order Status Validation
+================================ */
 export const updateOrderStatusSchema = z.object({
-  status: z.enum(['pending', 'shipping', 'delivered', 'cancelled']),
+  orderStatus: z.enum([
+    "pending",
+    "processing",
+    "shipped",
+    "delivered",
+    "cancelled",
+  ]),
 });

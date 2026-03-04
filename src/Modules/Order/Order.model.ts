@@ -1,15 +1,17 @@
-import { Schema, model } from 'mongoose';
-import { TOrderProduct } from './Order.interface';
+import { Schema, model } from "mongoose";
+import { IOrder, IOrderItem, IShippingAddress } from "./Order.interface";
 
-const orderProductSchema = new Schema<TOrderProduct>(
+/* =====================================
+   Order Item Schema
+===================================== */
+const OrderItemSchema = new Schema<IOrderItem>(
   {
-    email: {
-      type: String,
-      required: true,
-      trim: true,
-      lowercase: true,
-    },
     productId: {
+      type: Schema.Types.ObjectId,
+      ref: "Product",
+      required: true,
+    },
+    name: {
       type: String,
       required: true,
       trim: true,
@@ -17,41 +19,114 @@ const orderProductSchema = new Schema<TOrderProduct>(
     price: {
       type: Number,
       required: true,
-      min: [0, 'Price must be positive'],
+      min: 0,
     },
     quantity: {
       type: Number,
       required: true,
-      min: [1, 'Quantity must be at least 1'],
+      min: 1,
     },
-    status: {
+    image: {
       type: String,
-      enum: ['pending', 'shipping', 'delivered', 'cancelled'],
-      default: 'pending',
+      trim: true,
+    },
+  },
+  { _id: false }
+);
+
+/* =====================================
+   Shipping Address Schema
+===================================== */
+const ShippingAddressSchema = new Schema<IShippingAddress>(
+  {
+    fullName: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    phone: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    city: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    address: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+  },
+  { _id: false }
+);
+
+/* =====================================
+   Main Order Schema
+===================================== */
+const OrderSchema = new Schema<IOrder>(
+  {
+    sessionId: {
+      type: String,
+      required: true,
+      index: true,
+    },
+    orderNumber: {
+      type: String,
+      required: true,
+      unique: true,
+    },
+    items: {
+      type: [OrderItemSchema],
+      required: true,
+    },
+    totalAmount: {
+      type: Number,
+      required: true,
+      min: 0,
+    },
+    shippingAddress: {
+      type: ShippingAddressSchema,
+      required: true,
     },
     paymentMethod: {
       type: String,
-      enum: ['cash', 'card'],
       required: true,
+      trim: true,
     },
-    shippingAddress: {
-      name: { type: String, required: true },
-      phone: { type: String, required: true },
-      address: { type: String, required: true },
-      city: { type: String, required: true },
-      country: { type: String, required: true },
-    },
-    userId: {
+    paymentStatus: {
       type: String,
-      ref: 'User',
+      enum: ["pending", "paid", "failed"],
+      default: "pending",
+    },
+    orderStatus: {
+      type: String,
+      enum: ["pending", "processing", "shipped", "delivered", "cancelled"],
+      default: "pending",
+    },
+    orderDate: {
+      type: Date,
+      default: Date.now,
+    },
+    deliveredAt: {
+      type: Date,
+    },
+    cancelledAt: {
+      type: Date,
+    },
+    notes: {
+      type: String,
+      trim: true,
     },
   },
   {
-    timestamps: true,
+    timestamps: true, // automatically adds createdAt & updatedAt
   }
 );
 
-export const OrderProductModel = model<TOrderProduct>(
-  'FlexoOrder',
-  orderProductSchema,
-);
+/* =====================================
+   Model Export
+===================================== */
+export const Order = model<IOrder>("Order", OrderSchema);

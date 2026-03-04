@@ -1,101 +1,126 @@
 import { Request, Response } from "express";
-import catchAsync from "../../app/utils/catchAsync";
-
+import {
+  createOrderSchema,
+  updateOrderStatusSchema,
+} from "./Order.validation";
 import { orderService } from "./Order.service";
-import sendResponse from "../../app/utils/sendResponse";
-import { orderProductSchema, updateOrderStatusSchema } from "./Order.validation";
 
 
-const CreateOrder = catchAsync(async (req: Request, res: Response) => {
-  const zodParseData = orderProductSchema.parse(req.body);
-  const result = await orderService.createOrderDblink(zodParseData);
+/* ================================
+   Create Order
+================================ */
+const createOrder = async (req: Request, res: Response) => {
+  try {
+    const validatedData = createOrderSchema.parse(req.body);
 
-  sendResponse(res, {
-    statusCode: result.success ? 201 : 400,
-    success: result.success,
-    message: result.message,
-    data: result || null,
-  });
-});
+    const result = await orderService.createOrder(validatedData as any);
 
-
-
-const searchOrderByQuery = catchAsync(async (req: Request, res: Response) => {
-  const email = req.query.email as string | undefined;
-  const result = await orderService.getOrdersDblink(email);
-
-  sendResponse(res, {
-    statusCode: 200,
-    success: true,
-    message: email ? 'Orders fetched for user email!' : 'Orders fetched successfully!',
-    data: result,
-  });
-});
-
-const getOrderById = catchAsync(async (req: Request, res: Response) => {
-  const result = await orderService.getOrderById(req.params.orderId);
-
-  sendResponse(res, {
-    statusCode: 200,
-    success: true,
-    message: 'Order fetched successfully',
-    data: result,
-  });
-});
-
-const updateOrderStatus = catchAsync(async (req: Request, res: Response) => {
-  const { status } = updateOrderStatusSchema.parse(req.body);
-  const result = await orderService.updateOrderStatus(
-    req.params.orderId,
-    status,
-  );
-
-  sendResponse(res, {
-    statusCode: 200,
-    success: true,
-    message: 'Order status updated successfully',
-    data: result,
-  });
-});
-
-const getUserOrders = catchAsync(async (req: Request, res: Response) => {
-  const email = req.query.email as string | undefined;
-  
-  if (!email) {
-    return sendResponse(res, {
-      statusCode: 400,
+    res.status(201).json(result);
+  } catch (error: any) {
+    res.status(400).json({
       success: false,
-      message: 'Email is required to fetch user orders',
-      data: null,
+      message: error.message,
     });
   }
-  
-  const result = await orderService.getUserOrders(email);
+};
 
-  sendResponse(res, {
-    statusCode: 200,
-    success: true,
-    message: 'User orders fetched successfully',
-    data: result,
-  });
-});
+/* ================================
+   Get All Orders
+================================ */
+const getOrders = async (_req: Request, res: Response) => {
+  try {
+    const result = await orderService.getOrders();
+    res.status(200).json(result);
+  } catch (error: any) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
 
-const deleteOrder = catchAsync(async (req: Request, res: Response) => {
-  const result = await orderService.deleteOrder(req.params.orderId);
+/* ================================
+   Get User Orders
+================================ */
+const getUserOrders = async (req: Request, res: Response) => {
+  try {
+    const { sessionId } = req.query;
 
-  sendResponse(res, {
-    statusCode: 200,
-    success: true,
-    message: 'Order deleted successfully',
-    data: result,
-  });
-});
+    if (!sessionId) {
+      return res.status(400).json({
+        success: false,
+        message: "Session ID required",
+      });
+    }
 
-export const orderControls = {
-  CreateOrder,
-  searchOrderByQuery,
+    const result = await orderService.getUserOrders(
+      sessionId as string
+    );
+
+    res.status(200).json(result);
+  } catch (error: any) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+/* ================================
+   Get Order By ID
+================================ */
+const getOrderById = async (req: Request, res: Response) => {
+  try {
+    const { orderId } = req.params;
+
+    const result = await orderService.getOrderById(orderId);
+
+    res.status(200).json(result);
+  } catch (error: any) {
+    res.status(404).json({ success: false, message: error.message });
+  }
+};
+
+/* ================================
+   Update Order Status
+================================ */
+const updateOrderStatus = async (req: Request, res: Response) => {
+  try {
+    const { orderId } = req.params;
+
+    const validatedData = updateOrderStatusSchema.parse(req.body);
+
+    const result = await orderService.updateOrderStatus(
+      orderId,
+      validatedData.orderStatus
+    );
+
+    res.status(200).json(result);
+  } catch (error: any) {
+    res.status(400).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+/* ================================
+   Delete Order
+================================ */
+const deleteOrder = async (req: Request, res: Response) => {
+  try {
+    const { orderId } = req.params;
+
+    const result = await orderService.deleteOrder(orderId);
+
+    res.status(200).json(result);
+  } catch (error: any) {
+    res.status(404).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+export const orderController = {
+  createOrder,
+  getOrders,
+  getUserOrders,
   getOrderById,
   updateOrderStatus,
-  getUserOrders,
   deleteOrder,
 };
