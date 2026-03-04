@@ -2,11 +2,11 @@ import { CartModel } from './cart.model';
 import { productService } from '../Product/Product.service';
 import { TCartItem } from './card.interface';
 
-const getCartByUserId = async (userId: string) => {
-  let cart = await CartModel.findOne({ userId });
+const getCartBySessionId = async (sessionId: string) => {
+  let cart = await CartModel.findOne({ sessionId });
   if (!cart) {
     cart = await CartModel.create({
-      userId,
+      sessionId,
       items: [],
       totalAmount: 0,
     });
@@ -14,7 +14,7 @@ const getCartByUserId = async (userId: string) => {
   return cart;
 };
 
-const addToCart = async (userId: string, productId: string, quantity: number) => {
+const addToCart = async (sessionId: string, productId: string, quantity: number) => {
   const product = await productService.GetAsingleProductFromDB(productId);
   if (!product) {
     throw new Error('Product not found');
@@ -24,16 +24,15 @@ const addToCart = async (userId: string, productId: string, quantity: number) =>
     throw new Error('Insufficient stock');
   }
 
-  let cart = await CartModel.findOne({ userId });
+  let cart = await CartModel.findOne({ sessionId });
   if (!cart) {
     cart = new CartModel({
-      userId,
+      sessionId,
       items: [],
       totalAmount: 0,
     });
   }
 
-  // FIXED: Added type annotation for item
   const existingItemIndex = cart.items.findIndex(
     (item: TCartItem) => item.productId === productId
   );
@@ -48,6 +47,7 @@ const addToCart = async (userId: string, productId: string, quantity: number) =>
       quantity,
       price: product.price,
       name: product.name,
+      image: product.image,
     });
   }
 
@@ -61,13 +61,12 @@ const addToCart = async (userId: string, productId: string, quantity: number) =>
   return cart;
 };
 
-const updateCartItem = async (userId: string, productId: string, quantity: number) => {
-  const cart = await CartModel.findOne({ userId });
+const updateCartItem = async (sessionId: string, productId: string, quantity: number) => {
+  const cart = await CartModel.findOne({ sessionId });
   if (!cart) {
     throw new Error('Cart not found');
   }
 
-  // FIXED: Added type annotation for item
   const itemIndex = cart.items.findIndex(
     (item: TCartItem) => item.productId === productId
   );
@@ -94,7 +93,7 @@ const updateCartItem = async (userId: string, productId: string, quantity: numbe
     cart.items[itemIndex].quantity = quantity;
   }
 
-  // Recalculate total - FIXED: Added type annotation
+  // Recalculate total
   cart.totalAmount = cart.items.reduce(
     (total: number, item: TCartItem) => total + item.price * item.quantity,
     0
@@ -104,15 +103,15 @@ const updateCartItem = async (userId: string, productId: string, quantity: numbe
   return cart;
 };
 
-const removeFromCart = async (userId: string, productId: string) => {
-  const cart = await CartModel.findOne({ userId });
+const removeFromCart = async (sessionId: string, productId: string) => {
+  const cart = await CartModel.findOne({ sessionId });
   if (!cart) {
     throw new Error('Cart not found');
   }
 
   cart.items = cart.items.filter((item: TCartItem) => item.productId !== productId);
   
-  // Recalculate total - FIXED: Added type annotation
+  // Recalculate total
   cart.totalAmount = cart.items.reduce(
     (total: number, item: TCartItem) => total + item.price * item.quantity,
     0
@@ -122,8 +121,8 @@ const removeFromCart = async (userId: string, productId: string) => {
   return cart;
 };
 
-const clearCart = async (userId: string) => {
-  const cart = await CartModel.findOne({ userId });
+const clearCart = async (sessionId: string) => {
+  const cart = await CartModel.findOne({ sessionId });
   if (!cart) {
     throw new Error('Cart not found');
   }
@@ -135,7 +134,7 @@ const clearCart = async (userId: string) => {
 };
 
 export const CartService = {
-  getCartByUserId,
+  getCartBySessionId,
   addToCart,
   updateCartItem,
   removeFromCart,

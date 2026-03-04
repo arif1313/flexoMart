@@ -1,7 +1,6 @@
 import { Schema, model } from 'mongoose';
 import { TCart, TCartItem } from './card.interface';
 
-
 const cartItemSchema = new Schema<TCartItem>({
   productId: {
     type: String,
@@ -20,14 +19,18 @@ const cartItemSchema = new Schema<TCartItem>({
   name: {
     type: String,
   },
+  image: {
+    type: String,
+  },
 });
 
 const cartSchema = new Schema<TCart>(
   {
-    userId: {
+    sessionId: {
       type: String,
       required: true,
       unique: true,
+      index: true,
     },
     items: [cartItemSchema],
     totalAmount: {

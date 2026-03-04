@@ -3,10 +3,11 @@ export type TCartItem = {
   quantity: number;
   price: number;
   name?: string;
+  image?: string;
 };
 
 export type TCart = {
-  userId: string;
+  sessionId: string; // Changed from userId to sessionId
   items: TCartItem[];
   totalAmount: number;
   createdAt?: Date;

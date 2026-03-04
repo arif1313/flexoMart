@@ -3,20 +3,19 @@ import { CartService } from './cart.service';
 import catchAsync from '../../app/utils/catchAsync';
 import sendResponse from '../../app/utils/sendResponse';
 
-
 const getCart = catchAsync(async (req: Request, res: Response) => {
-  const userId = req.query.userId as string;
+  const sessionId = req.query.sessionId as string;
   
-  if (!userId) {
+  if (!sessionId) {
     return sendResponse(res, {
       statusCode: 400,
       success: false,
-      message: 'User ID is required',
+      message: 'Session ID is required',
       data: null,
     });
   }
   
-  const result = await CartService.getCartByUserId(userId);
+  const result = await CartService.getCartBySessionId(sessionId);
 
   sendResponse(res, {
     statusCode: 200,
@@ -27,18 +26,18 @@ const getCart = catchAsync(async (req: Request, res: Response) => {
 });
 
 const addToCart = catchAsync(async (req: Request, res: Response) => {
-  const { userId, productId, quantity } = req.body;
+  const { sessionId, productId, quantity } = req.body;
   
-  if (!userId || !productId || !quantity) {
+  if (!sessionId || !productId || !quantity) {
     return sendResponse(res, {
       statusCode: 400,
       success: false,
-      message: 'User ID, Product ID and quantity are required',
+      message: 'Session ID, Product ID and quantity are required',
       data: null,
     });
   }
   
-  const result = await CartService.addToCart(userId, productId, quantity);
+  const result = await CartService.addToCart(sessionId, productId, quantity);
 
   sendResponse(res, {
     statusCode: 200,
@@ -49,18 +48,18 @@ const addToCart = catchAsync(async (req: Request, res: Response) => {
 });
 
 const updateCartItem = catchAsync(async (req: Request, res: Response) => {
-  const { userId, productId, quantity } = req.body;
+  const { sessionId, productId, quantity } = req.body;
   
-  if (!userId || !productId || quantity === undefined) {
+  if (!sessionId || !productId || quantity === undefined) {
     return sendResponse(res, {
       statusCode: 400,
       success: false,
-      message: 'User ID, Product ID and quantity are required',
+      message: 'Session ID, Product ID and quantity are required',
       data: null,
     });
   }
   
-  const result = await CartService.updateCartItem(userId, productId, quantity);
+  const result = await CartService.updateCartItem(sessionId, productId, quantity);
 
   sendResponse(res, {
     statusCode: 200,
@@ -71,19 +70,19 @@ const updateCartItem = catchAsync(async (req: Request, res: Response) => {
 });
 
 const removeFromCart = catchAsync(async (req: Request, res: Response) => {
-  const userId = req.query.userId as string;
+  const sessionId = req.query.sessionId as string;
   const { productId } = req.params;
   
-  if (!userId) {
+  if (!sessionId) {
     return sendResponse(res, {
       statusCode: 400,
       success: false,
-      message: 'User ID is required',
+      message: 'Session ID is required',
       data: null,
     });
   }
   
-  const result = await CartService.removeFromCart(userId, productId);
+  const result = await CartService.removeFromCart(sessionId, productId);
 
   sendResponse(res, {
     statusCode: 200,
@@ -94,18 +93,18 @@ const removeFromCart = catchAsync(async (req: Request, res: Response) => {
 });
 
 const clearCart = catchAsync(async (req: Request, res: Response) => {
-  const userId = req.query.userId as string;
+  const sessionId = req.query.sessionId as string;
   
-  if (!userId) {
+  if (!sessionId) {
     return sendResponse(res, {
       statusCode: 400,
       success: false,
-      message: 'User ID is required',
+      message: 'Session ID is required',
       data: null,
     });
   }
   
-  const result = await CartService.clearCart(userId);
+  const result = await CartService.clearCart(sessionId);
 
   sendResponse(res, {
     statusCode: 200,
