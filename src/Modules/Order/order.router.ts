@@ -1,7 +1,6 @@
 import express from "express";
 import { orderController } from "./Order.controles";
 
-
 const router = express.Router();
 
 // Create a new order
